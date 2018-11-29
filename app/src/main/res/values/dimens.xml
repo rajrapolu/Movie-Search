@@ -4,4 +4,5 @@
     <dimen name="image_view_width_height">100dp</dimen>
     <dimen name="progress_bar_width_height">50dp</dimen>
     <dimen name="default_text_size">14sp</dimen>
+    <dimen name="image_view_details_width_height">200dp</dimen>
 </resources>

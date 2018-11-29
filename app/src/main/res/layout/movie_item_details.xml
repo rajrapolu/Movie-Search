@@ -10,7 +10,8 @@
             android:id="@+id/movie_item_image_view"
             android:layout_width="@dimen/image_view_width_height"
             android:layout_height="@dimen/image_view_width_height"
-            android:src="@drawable/ic_launcher_background"
+            android:contentDescription="@string/lbl_movie_poster"
+            android:src="@mipmap/ic_launcher"
             android:scaleType="fitXY"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
