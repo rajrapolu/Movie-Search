@@ -7,4 +7,6 @@ public class ConstantsClass {
     public static final String DISCOVER_MOVIES_SORT_BY = "release_date.asc";
 
     public static final String IMAGES_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+    public static final int INITIAL_PAGE = 1;
 }

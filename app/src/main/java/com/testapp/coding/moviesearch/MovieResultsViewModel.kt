@@ -16,12 +16,15 @@ class MovieResultsViewModel : ViewModel() {
     private lateinit var mMovieSearchResults: MutableLiveData<MovieSearchDTO>
     private val mMovieIntermediateSearchResults = MutableLiveData<MovieSearchDTO>()
 
+    private var previousPage: Int = 0
+    var mQuery: String? = null
+
     /**
      * Fetches movie results from the api. As soon as the network call executes the model updates the ViewModel and the
      * ViewModel in-turn updates the View
      * @return LiveData on which the view would observe on
      */
-    fun getMovieResults(): LiveData<MovieSearchDTO> {
+    fun getDiscoverMovieResults(): LiveData<MovieSearchDTO> {
         if (!::mMovieResults.isInitialized) {
             val movieLiveData = mNetworkRequests.fetchInitialMovieSearchResults()
             mMovieResults = Transformations.switchMap(movieLiveData) { movieSearchDTO ->
@@ -30,6 +33,10 @@ class MovieResultsViewModel : ViewModel() {
             } as MutableLiveData<MovieSearchDTO>
         }
         return mMovieResults
+    }
+
+    private fun getInitialMovieResults(page: Int) {
+        mNetworkRequests.getDiscoverMovies(page)
     }
 
     /**
@@ -48,9 +55,50 @@ class MovieResultsViewModel : ViewModel() {
 
     /**
      * Makes a call to get results based on users query
-     * @param query searched query by the user
+     * @param page page associated with the query
      */
-    fun makeMovieSearchResultsCall(query: String) {
-        mNetworkRequests.getMovieSearchResults(query)
+    private fun getMovieQuerySearchResults(page: Int) {
+        mQuery?.let {
+            mNetworkRequests.getMovieSearchResults(mQuery!!, page)
+        }
+    }
+
+    /**
+     * Returns if the adapter needs to clear off the items
+     * @param movieSearchDTO DTO received from API
+     * @return true if it needs to clear otherwise false
+     */
+    fun shouldClearItems(movieSearchDTO: MovieSearchDTO): Boolean {
+        return movieSearchDTO.page == ConstantsClass.INITIAL_PAGE
+    }
+
+    /**
+     * Returns if the adapters data needs to be updated
+     * @param movieSearchDTO DRO received from API
+     * @return true if it has to update the adapter false otherwise
+     */
+    fun shouldUpdateAdapter(movieSearchDTO: MovieSearchDTO): Boolean {
+        if (movieSearchDTO.page != previousPage) {
+            previousPage = movieSearchDTO.page
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Calls the respective movie results end point
+     * if mQuery is null then discover movie results will be called otherwise search results will be called
+     * @param page page associated with query
+     */
+    fun getMovieResults(page: Int) {
+        if (mQuery == null) {
+            getInitialMovieResults(page)
+        } else {
+            getMovieQuerySearchResults(page)
+        }
+    }
+
+    fun resetPage() {
+        previousPage = 0
     }
 }

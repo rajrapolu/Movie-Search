@@ -18,6 +18,7 @@ class MovieSearchAdapter(
 ) :
     RecyclerView.Adapter<MovieSearchAdapter.MovieSearchViewHolder>() {
 
+    // Interface that needs to implemented by the activities that use this adapter
     interface ItemClickListener {
         fun onItemClicked(movieInfoDTO: MovieInfoDTO)
     }
@@ -34,18 +35,26 @@ class MovieSearchAdapter(
         holder.bind(mMovieResults[position])
     }
 
+    // Updates the adapter items
     fun updateItems(results: List<MovieInfoDTO>?, clearItem: Boolean) {
         results?.let {
+            // When a new search is performed we need to clear the existing data otherwise just add the contents to the
+            // existing one
             if (clearItem) {
                 mMovieResults.clear()
+                mMovieResults.addAll(results)
+                notifyDataSetChanged()
+            } else {
+                val size = mMovieResults.size
+                mMovieResults.addAll(results)
+                notifyItemRangeInserted(size, mMovieResults.size - size)
             }
-            mMovieResults.addAll(results)
-            notifyDataSetChanged()
         }
     }
 
     inner class MovieSearchViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(movieInfo: MovieInfoDTO?) {
+
             movieInfo?.let {
                 GlideApp.with(context).load("${ConstantsClass.IMAGES_BASE_URL}${movieInfo.imageUrl}")
                     .placeholder(R.mipmap.ic_launcher).into(itemView.movie_item_image_view)
@@ -55,6 +64,7 @@ class MovieSearchAdapter(
                         R.string.release_date_value,
                         DateUtil.formatReleaseDate(movieInfo.releaseDate)
                     )
+
                     setOnClickListener { _ ->
                         try {
                             (context as ItemClickListener).onItemClicked(movieInfo)
