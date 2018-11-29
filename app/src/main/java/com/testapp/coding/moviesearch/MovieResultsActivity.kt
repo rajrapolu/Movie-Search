@@ -12,10 +12,14 @@ import android.support.v7.widget.SearchView
 import android.view.Menu
 import android.view.View
 import android.widget.Toast
+import com.testapp.coding.moviesearch.models.MovieInfoDTO
 import com.testapp.coding.moviesearch.models.MovieSearchDTO
 import kotlinx.android.synthetic.main.activity_movie_results.*
 
-class MovieResultsActivity : AppCompatActivity() {
+class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickListener {
+    override fun onItemClicked(movieInfoDTO: MovieInfoDTO) {
+        MovieDetailsActivity.startActivity(this, movieInfoDTO)
+    }
 
     private lateinit var mMovieSearchAdapter: MovieSearchAdapter
     private lateinit var mViewModel: MovieResultsViewModel
@@ -89,7 +93,7 @@ class MovieResultsActivity : AppCompatActivity() {
     }
 
     private fun populateUI() {
-        mMovieSearchAdapter = MovieSearchAdapter(mutableListOf())
+        mMovieSearchAdapter = MovieSearchAdapter(mutableListOf(), this)
         val linearLayoutManager = LinearLayoutManager(this)
         movie_search_recycler_view.layoutManager = linearLayoutManager
         movie_search_recycler_view.adapter = mMovieSearchAdapter
