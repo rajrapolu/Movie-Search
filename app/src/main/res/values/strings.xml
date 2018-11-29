@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Movie Search</string>
+    <string name="lbl_search_movies">Search Movies</string>
+    <string name="lbl_search">Search</string>
 </resources>
