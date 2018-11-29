@@ -8,6 +8,6 @@ import kotlinx.android.parcel.Parcelize
 data class MovieInfoDTO(
     val id: Int,
     val title: String, @SerializedName("release_date") val releaseDate: String,
-    @SerializedName("poster_path") val imageUrl: String,
+    @SerializedName("poster_path") val imageUrl: String?,
     val overview: String
 ) : Parcelable

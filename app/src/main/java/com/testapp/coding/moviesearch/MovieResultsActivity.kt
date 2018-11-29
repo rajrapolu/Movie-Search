@@ -39,16 +39,18 @@ class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickLi
      * Loads initial data which is discover movie results
      */
     private fun loadInitialData() {
-        movie_search_progress_bar.visibility = View.VISIBLE
         mViewModel = ViewModelProviders.of(this).get(MovieResultsViewModel::class.java)
         // View observes on ViewModels LiveData
         // This is used to observe changes on discover movie results
         mViewModel.getDiscoverMovieResults().observe(this,
             Observer<MovieSearchDTO> { movieSearchDTO: MovieSearchDTO? ->
                 updateResults(movieSearchDTO)
+                movie_search_progress_bar.visibility = View.GONE
             })
         // Load initial page first
-        mViewModel.getMovieResults(ConstantsClass.INITIAL_PAGE)
+        if (mViewModel.getMovieResults(ConstantsClass.INITIAL_PAGE)) {
+            movie_search_progress_bar.visibility = View.VISIBLE
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -74,9 +76,8 @@ class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickLi
      * When ever the user searches a query make a network call to get the results
      */
     private fun handleIntent(intent: Intent) {
-        if (Intent.ACTION_SEARCH.equals(intent.action)) {
+        if (Intent.ACTION_SEARCH == intent.action) {
             mScrollListener.resetScrollState()
-            mViewModel.resetPage()
             val searchedQuery = intent.getStringExtra(SearchManager.QUERY)
             mViewModel.getMovieSearchResults().observe(this,
                 Observer<MovieSearchDTO> { movieSearchDTO: MovieSearchDTO? ->
@@ -85,11 +86,12 @@ class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickLi
                     }
                     movie_search_progress_bar.visibility = View.GONE
                 })
-            movie_search_progress_bar.visibility = View.VISIBLE
             // Save the query and load initial page for movie search
             searchedQuery?.let {
                 mViewModel.mQuery = searchedQuery
-                mViewModel.getMovieResults(ConstantsClass.INITIAL_PAGE)
+                if (mViewModel.getMovieResults(ConstantsClass.INITIAL_PAGE)) {
+                    movie_search_progress_bar.visibility = View.VISIBLE
+                }
             }
         }
     }
@@ -100,7 +102,10 @@ class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickLi
      */
     private fun updateResults(movieSearchDTO: MovieSearchDTO?) {
         if (movieSearchDTO == null) {
-            Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, R.string.error_text, Toast.LENGTH_LONG).show()
+            if (mViewModel.shouldDisplayButton()) {
+                movie_search_retry_button.visibility = View.VISIBLE
+            }
         } else if (mViewModel.shouldUpdateAdapter(movieSearchDTO)) {
             addContentToAdapter(movieSearchDTO.results, mViewModel.shouldClearItems(movieSearchDTO))
         }
@@ -113,11 +118,16 @@ class MovieResultsActivity : AppCompatActivity(), MovieSearchAdapter.ItemClickLi
      */
     private fun addContentToAdapter(movieResults: List<MovieInfoDTO>, clearItems: Boolean) {
         mMovieSearchAdapter.updateItems(movieResults, clearItems)
-        movie_search_progress_bar.visibility = View.GONE
     }
 
     // Sets up recycler view
     private fun setupRecyclerView() {
+        movie_search_retry_button.setOnClickListener {
+            movie_search_progress_bar.visibility = View.VISIBLE
+            mViewModel.getMovieResults(ConstantsClass.INITIAL_PAGE)
+            movie_search_retry_button.visibility = View.GONE
+        }
+
         mMovieSearchAdapter = MovieSearchAdapter(mutableListOf(), this)
         val linearLayoutManager = LinearLayoutManager(this)
         movie_search_recycler_view.layoutManager = linearLayoutManager

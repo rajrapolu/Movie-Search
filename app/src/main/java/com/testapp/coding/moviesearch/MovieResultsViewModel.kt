@@ -16,7 +16,8 @@ class MovieResultsViewModel : ViewModel() {
     private lateinit var mMovieSearchResults: MutableLiveData<MovieSearchDTO>
     private val mMovieIntermediateSearchResults = MutableLiveData<MovieSearchDTO>()
 
-    private var previousPage: Int = 0
+    private var mPreviousPage: Int = 0
+    private var mTotalPages: Int = 0
     var mQuery: String? = null
 
     /**
@@ -78,8 +79,9 @@ class MovieResultsViewModel : ViewModel() {
      * @return true if it has to update the adapter false otherwise
      */
     fun shouldUpdateAdapter(movieSearchDTO: MovieSearchDTO): Boolean {
-        if (movieSearchDTO.page != previousPage) {
-            previousPage = movieSearchDTO.page
+        if (movieSearchDTO.page != mPreviousPage) {
+            mPreviousPage = movieSearchDTO.page
+            mTotalPages = movieSearchDTO.totalPages
             return true
         }
         return false
@@ -90,15 +92,26 @@ class MovieResultsViewModel : ViewModel() {
      * if mQuery is null then discover movie results will be called otherwise search results will be called
      * @param page page associated with query
      */
-    fun getMovieResults(page: Int) {
-        if (mQuery == null) {
-            getInitialMovieResults(page)
+    fun getMovieResults(page: Int): Boolean {
+        // When it is the page to be loaded previous page should be 0
+        if (page == ConstantsClass.INITIAL_PAGE) {
+            mPreviousPage = 0
+            mTotalPages = 0
+        }
+        return if (mPreviousPage != page) {
+            if (mQuery == null) {
+                getInitialMovieResults(page)
+            } else {
+                getMovieQuerySearchResults(page)
+            }
+            true
         } else {
-            getMovieQuerySearchResults(page)
+            false
         }
     }
 
-    fun resetPage() {
-        previousPage = 0
+    // Displays button only when loading first page
+    fun shouldDisplayButton(): Boolean {
+        return mPreviousPage == 0
     }
 }
