@@ -18,7 +18,6 @@ class NetworkRequests {
     fun fetchInitialMovieSearchResults(): MutableLiveData<MovieSearchDTO> {
         if (!::mMovieNetworkResults.isInitialized) {
             mMovieNetworkResults = MutableLiveData()
-            getDiscoverMovies(1)
         }
         return mMovieNetworkResults
     }
@@ -26,7 +25,7 @@ class NetworkRequests {
     /**
      * Fetches movies in ascending order of release dates
      */
-    private fun getDiscoverMovies(page: Int) {
+    fun getDiscoverMovies(page: Int) {
         MovieRetrofitService.create()
             .discoverMovies(
                 MovieRetrofitService.API_KEY,
@@ -65,8 +64,8 @@ class NetworkRequests {
      * Fetches movie results from the api
      * @param query searched query by the user
      */
-    fun getMovieSearchResults(query: String) {
-        MovieRetrofitService.create().searchMovies(MovieRetrofitService.API_KEY, query, 1).enqueue(object :
+    fun getMovieSearchResults(query: String, page: Int) {
+        MovieRetrofitService.create().searchMovies(MovieRetrofitService.API_KEY, query, page).enqueue(object :
             Callback<MovieSearchDTO> {
             override fun onFailure(call: Call<MovieSearchDTO>, t: Throwable) {
                 mMovieSearchNetworkResults.value = null

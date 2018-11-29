@@ -32,8 +32,10 @@ class MovieDetailsActivity : AppCompatActivity() {
     private fun populateUI() {
         val bundle = intent.extras
         val movieInfoDTO = bundle[MOVIE_INFO] as MovieInfoDTO
-        GlideApp.with(this).load("${ConstantsClass.IMAGES_BASE_URL}${movieInfoDTO.imageUrl}").centerCrop()
-            .placeholder(R.mipmap.ic_launcher).into(movie_details_image_view)
+        movieInfoDTO.imageUrl?.let { imageUrl ->
+            GlideApp.with(this).load("${ConstantsClass.IMAGES_BASE_URL}$imageUrl").centerCrop()
+                .placeholder(R.mipmap.ic_launcher).into(movie_details_image_view)
+        }
         movie_details_title.text = movieInfoDTO.title
         movie_details_release_date_label.text =
                 getString(R.string.release_date_value, DateUtil.formatReleaseDate(movieInfoDTO.releaseDate))
