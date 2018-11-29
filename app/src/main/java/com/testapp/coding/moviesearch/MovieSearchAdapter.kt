@@ -23,8 +23,11 @@ class MovieSearchAdapter(private val mMovieResults: MutableList<MovieInfoDTO> = 
         holder.bind(mMovieResults[position])
     }
 
-    fun updateItems(results: List<MovieInfoDTO>?) {
+    fun updateItems(results: List<MovieInfoDTO>?, clearItem: Boolean) {
         results?.let {
+            if (clearItem) {
+                mMovieResults.clear()
+            }
             mMovieResults.addAll(results)
             notifyDataSetChanged()
         }
@@ -34,8 +37,11 @@ class MovieSearchAdapter(private val mMovieResults: MutableList<MovieInfoDTO> = 
         fun bind(movieInfo: MovieInfoDTO?) {
             movieInfo?.let {
                 GlideApp.with(itemView.context).load("${ConstantsClass.IMAGES_BASE_URL}${movieInfo.imageUrl}")
-                    .placeholder(R.mipmap.ic_launcher).into(itemView.movie_item_details_image_view)
-                itemView.movie_details_title.text = movieInfo.title
+                    .placeholder(R.mipmap.ic_launcher).into(itemView.movie_item_image_view)
+                itemView.apply {
+                    movie_item_title.text = movieInfo.title
+                    movie_item_release_date.text = movieInfo.releaseDate
+                }
             }
         }
     }

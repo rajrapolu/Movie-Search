@@ -10,11 +10,15 @@ import retrofit2.Response
 class NetworkRequests {
 
     private lateinit var mMovieNetworkResults: MutableLiveData<MovieSearchDTO>
+    private lateinit var mMovieSearchNetworkResults: MutableLiveData<MovieSearchDTO>
 
+    /**
+     * Fetches initial movies results that need to be displayed when the user has not searched for any movies
+     */
     fun fetchInitialMovieSearchResults(): MutableLiveData<MovieSearchDTO> {
         if (!::mMovieNetworkResults.isInitialized) {
             mMovieNetworkResults = MutableLiveData()
-            discoverMovies(1)
+            getDiscoverMovies(1)
         }
         return mMovieNetworkResults
     }
@@ -22,7 +26,7 @@ class NetworkRequests {
     /**
      * Fetches movies in ascending order of release dates
      */
-    private fun discoverMovies(page: Int) {
+    private fun getDiscoverMovies(page: Int) {
         MovieRetrofitService.create()
             .discoverMovies(
                 MovieRetrofitService.API_KEY,
@@ -39,25 +43,40 @@ class NetworkRequests {
                 override fun onResponse(call: Call<MovieSearchDTO>?, response: Response<MovieSearchDTO>?) {
                     if (response != null && response.isSuccessful) {
                         mMovieNetworkResults.value = response.body()
+                    } else {
+                        mMovieNetworkResults.value = null
                     }
                 }
-
             })
     }
 
     /**
-     * Fetches movie results from the api
+     * Initializes the LiveData that the ViewModel can observe
+     * @return LiveData that the ViewModel can observe on
      */
-    private fun fetchMovieResults() {
-        MovieRetrofitService.create().searchMovies(MovieRetrofitService.API_KEY, "football", 1).enqueue(object :
+    fun fetchMovieSearchResults(): MutableLiveData<MovieSearchDTO> {
+        if (!::mMovieSearchNetworkResults.isInitialized) {
+            mMovieSearchNetworkResults = MutableLiveData()
+        }
+        return mMovieSearchNetworkResults
+    }
+
+    /**
+     * Fetches movie results from the api
+     * @param query searched query by the user
+     */
+    fun getMovieSearchResults(query: String) {
+        MovieRetrofitService.create().searchMovies(MovieRetrofitService.API_KEY, query, 1).enqueue(object :
             Callback<MovieSearchDTO> {
             override fun onFailure(call: Call<MovieSearchDTO>, t: Throwable) {
-                mMovieNetworkResults.value = null
+                mMovieSearchNetworkResults.value = null
             }
 
             override fun onResponse(call: Call<MovieSearchDTO>?, response: Response<MovieSearchDTO>?) {
                 if (response != null && response.isSuccessful) {
-                    mMovieNetworkResults.value = response.body()
+                    mMovieSearchNetworkResults.value = response.body()
+                } else {
+                    mMovieSearchNetworkResults.value = null
                 }
             }
         })

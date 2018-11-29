@@ -11,7 +11,10 @@ class MovieResultsViewModel : ViewModel() {
 
     private lateinit var mMovieResults: MutableLiveData<MovieSearchDTO>
     private val mMovieIntermediateResults = MutableLiveData<MovieSearchDTO>()
-    private lateinit var mNetworkRequests: NetworkRequests
+    private var mNetworkRequests: NetworkRequests = NetworkRequests()
+
+    private lateinit var mMovieSearchResults: MutableLiveData<MovieSearchDTO>
+    private val mMovieIntermediateSearchResults = MutableLiveData<MovieSearchDTO>()
 
     /**
      * Fetches movie results from the api. As soon as the network call executes the model updates the ViewModel and the
@@ -20,7 +23,6 @@ class MovieResultsViewModel : ViewModel() {
      */
     fun getMovieResults(): LiveData<MovieSearchDTO> {
         if (!::mMovieResults.isInitialized) {
-            mNetworkRequests = NetworkRequests()
             val movieLiveData = mNetworkRequests.fetchInitialMovieSearchResults()
             mMovieResults = Transformations.switchMap(movieLiveData) { movieSearchDTO ->
                 mMovieIntermediateResults.value = movieSearchDTO
@@ -28,5 +30,27 @@ class MovieResultsViewModel : ViewModel() {
             } as MutableLiveData<MovieSearchDTO>
         }
         return mMovieResults
+    }
+
+    /**
+     * Returns LiveData for movie search results that the view can observe on
+     */
+    fun getMovieSearchResults(): LiveData<MovieSearchDTO> {
+        if (!::mMovieSearchResults.isInitialized) {
+            val movieLiveData = mNetworkRequests.fetchMovieSearchResults()
+            mMovieSearchResults = Transformations.switchMap(movieLiveData) { movieSearchDTO ->
+                mMovieIntermediateSearchResults.value = movieSearchDTO
+                mMovieIntermediateSearchResults
+            } as MutableLiveData<MovieSearchDTO>
+        }
+        return mMovieSearchResults
+    }
+
+    /**
+     * Makes a call to get results based on users query
+     * @param query searched query by the user
+     */
+    fun makeMovieSearchResultsCall(query: String) {
+        mNetworkRequests.getMovieSearchResults(query)
     }
 }
